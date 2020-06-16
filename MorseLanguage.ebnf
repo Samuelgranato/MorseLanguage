@@ -1,0 +1,351 @@
+(* Samuel Granato *)
+
+(* 
+   morse table
+   A	.-	
+   B	-...	
+   C	-.-.	
+   D	-..	
+   E	.	
+   F	..-.
+   G	--.	
+   H	....	
+   I	..	
+   J	.---	
+   K	-.-	
+   L	.-..
+   M	--	
+   N	-.	
+   O	---	
+   P	.--.	
+   Q	--.-	
+   R	.-.
+   S	...	
+   T	-	
+   U	..-	
+   V	...-	
+   W	.--	
+   X	-..-
+   Y	-.--	
+   Z	--..
+
+   Numbers
+   0	-----	
+   1	.----	
+   2	..---	
+   3	...--	
+   4	....-	
+   5	.....
+   6	-....	
+   7	--...	
+   8	---..	
+   9	----.
+
+   Punctuation
+   .	.-.-.-	
+   ,	--..--	
+   ?	..--..	
+   '	.----.	
+   !	-.-.--	
+   /	-..-.
+   (	-.--.	
+   )	-.--.-	
+   &	.-...	
+   :	---...	
+   =	-...-
+   +	.-.-.	
+   -	-....-	
+   _	..--.-	
+   "	.-..-.	
+   $	...-..-	
+   @	.--.-.
+   ¿	..-.-	
+   ¡	--...-
+
+
+   my reserved words   
+
+    '.. ..-.'                                        : 'IF',
+    '. .-.. ... .'                                   : 'ELSE',
+    '.-- .... .. .-.. .'                             : 'WHILE',
+    '. -.-. .... ---'                                : 'ECHO',
+    '.-. . .- -.. .-.. .. -. . -.--. -.--.-'         : 'READLINE',
+    '--. .-. . .- - . .-.'                           : 'GREATER',
+    '.-.. . ... ...'                                 : 'LESS',
+    '-.-. --- -. -.-. .- -'                          : 'CONCAT',
+    '-- ..- .-.. -'                                  : 'MULT',
+    '--- .--. . -. .--. .-. --- --. .-. .- --'       : 'OPEN_PROGRAM',
+    '-.-. .-.. --- ... . .--. .-. --- --. .-. .- --' : 'CLOSE_PROGRAM',
+    '--- .--. . -. -... .-.. --- -.-. -.-'           : 'OPEN_BLOCK',
+    '-.-. .-.. --- ... . -... .-.. --- -.-. -.-'     : 'CLOSE_BLOCK',
+    '- .-. ..- .'                                    : 'TRUE',
+    '..-. .- .-.. ... .'                             : 'FALSE',
+    '..-. ..- -. -.-. - .. --- -.'                   : 'FUNCDEC',
+    '.-. . - ..- .-. -.'                             : 'RETURN',
+
+ *)
+
+program
+
+   : '--- .--. . -. .--. .-. --- --. .-. .- --' statement+ '-.-. .-.. --- ... . .--. .-. --- --. .-. .- --'
+
+   ---...
+   ;
+
+
+statement
+
+   : '.. ..-.' paren_expr statement
+
+   | '.. ..-.' paren_expr statement '. .-..' statement
+
+   | '.-- .-..' paren_expr statement
+
+   | '..-. .-.' for_expr statement '---...'
+
+   | '..-. ..- -. -.-. - .. --- -.' func_name func_inputs statement'---...'
+
+   | '--.- -...' statement* '-.-. -...'
+
+   | expr '---...'
+
+   | term '---...'
+
+   | '---...'
+
+   ---...
+   ;
+
+paren_expr
+
+   : '-.--.' expr '-.--.-'
+
+   ---...
+   ;
+
+func_inputs
+   
+   : '-.--.' [term]+ '-.--.-'
+
+   ---...
+   ;
+
+for_expr
+
+   : '-.--.' integer '---...' expr '---...' expr '-.--.-' 
+
+   ---...
+   ;
+
+func_name
+
+   : STRING*
+
+   ---...
+   ;
+
+expr
+
+   : term '-...- -...-' term
+
+   | term '.-.. -' term
+
+   | term '.-.. -...-' term
+
+   | term '--. -' term
+
+   | term '--. -...-' term
+
+   | term '-.-.-- -...-' term 
+   
+   | expr .-....-... expr
+
+   | expr .--. .--. .--. .--. expr
+
+   | -.-.--expr
+
+   ---...
+   ;
+
+term
+
+   : term
+
+   | term .-.-. numeric
+
+   | term .-.-. text
+
+   | term -....- numeric
+
+   | term -- .-.. numeric
+
+   | term -..-. numeric
+
+   | term -...- numeric
+
+   | term -...- text
+
+   ---...
+   ;
+
+numeric
+
+   : integer_var
+
+   | [-----|.----|..---|...--|....-|.....|-....|--...|---..|----.]+
+
+   ---...
+   ;
+
+
+integer_var
+
+   : [-----|.----|..---|...--|....-|.....|-....|--...|---..|----.]+
+
+   ---...
+   ;
+
+text
+
+   : STRING_VAR
+
+   | '[.-|-...|-.-.|-..|.|..-.|--.|....|..|.---|-.-|.-..|--|-.|---|.--.|--.-|.-.|...|-|..-|...-|.--|-..-|-.--|--..]+'
+
+   ---...
+   ;
+
+STRING_VAR
+   : '[.-|-...|-.-.|-..|.|..-.|--.|....|..|.---|-.-|.-..|--|-.|---|.--.|--.-|.-.|...|-|..-|...-|.--|-..-|-.--|--..]+'
+
+   ---...
+
+   ;
+   
+(* obs: no fim de cada block tem um ; para ficar correta a sintaxe do arquivo .ebnf *)
+(* ↓↓↓↓↓↓ tradução *)
+(* 
+
+program
+
+   : OPENPROGRAM statement+ CLOSEPROGRAM
+
+   :
+
+
+statement
+
+   : 'if' paren_expr statement
+
+   | 'if' paren_expr statement 'else' statement
+
+   | 'while' paren_expr statement
+
+   | 'for' for_expr statement ':'
+
+   | 'function' func_name func_inputs statement':'
+
+   | 'OPENBLOCK' statement* 'CLOSEBLOCK'
+
+   | expr ':'
+
+   | term ':'
+
+   | ':'
+
+   :
+
+paren_expr
+
+   : '(' expr ')'
+
+   :
+
+func_inputs
+   
+   : '(' ([term](,[term]+))* ')'
+
+   :
+
+for_expr
+
+   : '(' integer ':' expr ':' expr ')' 
+
+   :
+
+func_name
+
+   : STRING*
+
+   :
+
+expr
+
+   : term '==' term
+
+   | term LESS term
+
+   | term 'LESS =;' term
+
+   | term 'GREATER' term
+
+   | term 'GREATER =' term
+
+   | term '!=' term 
+   
+   | expr && expr
+
+   | expr || expr
+
+   | !expr
+
+   :
+
+term
+
+   : term
+
+   | term + numeric
+
+   | term + text
+
+   | term - numeric
+
+   | term * numeric
+
+   | term / numeric
+
+   | term = numeric
+
+   | term = text
+
+   :
+
+numeric
+
+   : integer_var
+
+   | [0-9]+
+
+   :
+
+
+integer_var
+
+   : [0-9]+
+
+   :
+
+text
+
+   : STRING_VAR
+
+   | '[A-Z]+'
+
+   :
+
+STRING_VAR
+   : '[A-Z]+'
+
+   : 
+*)
+
